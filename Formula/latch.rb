@@ -39,39 +39,40 @@ class Latch < Formula
     end
   end
 
-  def install
-    # Fetch checksums.txt and its minisign signature from the same private
-    # release using the same auth as the binary. We shell out to curl rather
-    # than declaring these as `resource` blocks because brew's resource model
-    # would require us to commit a sha256 for the signature file (which would
-    # itself need bumping every release for no trust gain — minisig over
-    # checksums is the load-bearing trust check, not sha256-of-minisig).
-    token = ENV.fetch("HOMEBREW_GITHUB_API_TOKEN", nil)
-    odie "HOMEBREW_GITHUB_API_TOKEN is required" if token.nil?
+  # checksums.txt and its minisig are fetched as resources rather than via
+  # curl in `def install` because Homebrew's superenv strips HOMEBREW_*
+  # env vars (including HOMEBREW_GITHUB_API_TOKEN) before def install runs,
+  # so curl-with-Authorization-header would fail. Resources are downloaded
+  # by brew's main process where the env var is still available, via the
+  # same custom strategy as the binary.
+  resource "checksums" do
+    url "https://github.com/mirrorpath/latch/releases/download/#{version}/checksums.txt",
+        using: GitHubPrivateRepositoryReleaseDownloadStrategy
+    sha256 "315165a7357e9151ecc21bd141a3b2454c57ad6692f2f87bfd5169d15dbab452"
+  end
 
-    %w[checksums.txt checksums.txt.minisig].each do |asset|
-      asset_url = release_asset_url(asset, token: token)
-      system "curl",
-             "--fail", "--silent", "--show-error", "--location",
-             "--header", "Accept: application/octet-stream",
-             "--header", "Authorization: Bearer #{token}",
-             "--output", asset,
-             asset_url
-    end
+  resource "checksums-sig" do
+    url "https://github.com/mirrorpath/latch/releases/download/#{version}/checksums.txt.minisig",
+        using: GitHubPrivateRepositoryReleaseDownloadStrategy
+    sha256 "cc2df36ff61d861fd5a9bc5b67bd088627e1cde4b896f8d363d47a6a0baeb906"
+  end
+
+  def install
+    # Stage the resources next to the binary so minisign can verify them.
+    resource("checksums").stage(buildpath)
+    resource("checksums-sig").stage(buildpath)
 
     # Verify checksums.txt against the bundled minisign public key.
     # This is the same trust check scripts/install-latch.sh runs.
-    # `path` is the formula file's location; the pubkey lives next to it.
     #
     # Trust chain:
     #   1. Tap maintainer review = trust anchor for this formula's sha256.
     #   2. Brew's standard sha256 check on the downloaded archive enforces
     #      that the binary matches what the formula declares.
     #   3. Minisign-on-checksums verifies the signed manifest came from
-    #      the trusted release-signing key. This is defence-in-depth: it
-    #      doesn't gate `bin.install` (brew already did that), but it
-    #      ensures any later manual verify against `checksums.txt`
-    #      (e.g., from `caveats`) is also rooted in the signing key.
+    #      the trusted release-signing key. Brew already enforces (2),
+    #      so (3) is defence-in-depth — but it's the documented user-side
+    #      verification step from the binary-release-channel design.
     pubkey = (path.dirname/"latch-minisign.pub").to_s
     system "minisign", "-Vm", "checksums.txt",
            "-p", pubkey,
@@ -100,23 +101,5 @@ class Latch < Formula
 
   test do
     assert_match version.to_s, shell_output("#{bin}/latch --version")
-  end
-
-  private
-
-  def release_asset_url(filename, token:)
-    require "json"
-    api_url = "https://api.github.com/repos/mirrorpath/latch/releases/tags/#{version}"
-    metadata_json = `curl --fail --silent --show-error \
-      --header 'Accept: application/vnd.github+json' \
-      --header 'Authorization: Bearer #{token}' \
-      #{api_url}`
-    odie "Failed to fetch release metadata for #{version}" unless $CHILD_STATUS.success?
-
-    metadata = JSON.parse(metadata_json)
-    asset = metadata["assets"].find { |a| a["name"] == filename }
-    odie "Asset not found in release #{version}: #{filename}" if asset.nil?
-
-    asset["url"]
   end
 end
