@@ -1,1 +1,55 @@
 # homebrew-latch
+
+Private Homebrew tap for `latch`. Distributes the [`mirrorpath/latch`](https://github.com/mirrorpath/latch) binary as a brew formula on the same trust posture as `scripts/install-latch.sh`: minisign signature over `checksums.txt`, verified at install time inside `def install`.
+
+This is internal-private-preview infrastructure. Both this repo and `mirrorpath/latch` are private. Do not make either public without re-reviewing the distribution policy in `docs/release/internal-private-preview.md` (in the `mirrorpath/latch` repo).
+
+## How users install latch via this tap
+
+```bash
+export HOMEBREW_GITHUB_API_TOKEN=<fine-grained PAT, see scopes below>
+brew tap mirrorpath/latch git@github.com:mirrorpath/homebrew-latch.git
+brew install latch
+```
+
+The SSH form is required for the tap clone because `mirrorpath/homebrew-latch` is private.
+
+### Required PAT scopes
+
+`HOMEBREW_GITHUB_API_TOKEN` must be a fine-grained PAT with:
+
+- `mirrorpath/latch` → **Contents: Read** (downloads the release archive + checksums + minisig)
+- `mirrorpath/homebrew-latch` → **Contents: Read** (clones this tap)
+
+Use a dedicated, machine-specific PAT. Do not reuse a personal-development PAT.
+
+## Trust posture
+
+The formula bundles the project's minisign public key (`Formula/latch-minisign.pub`). At install time, `def install` runs:
+
+```
+minisign -Vm checksums.txt -p Formula/latch-minisign.pub -x checksums.txt.minisig
+```
+
+Install aborts on verification failure. This matches `install-latch.sh` exactly.
+
+### Public key rotation
+
+The minisign public key lives at `Formula/latch-minisign.pub`. To rotate:
+
+1. Generate the new key in the release engineer's environment.
+2. Commit the new `Formula/latch-minisign.pub` to this tap.
+3. Update the `MINISIGN_PRIVATE_KEY` and `MINISIGN_KEY_PASSWORD` secrets in `mirrorpath/latch`.
+4. Users get the new key on next `brew update`.
+
+A rotation that lands between `brew update` and `brew install` will fail-closed (the install verifies against whatever the user's local checkout of the tap holds at install time). Communicate rotation in advance.
+
+## Maintenance notes
+
+**Source distribution is out of scope.** Do not add a `url` to source, a `head` block, or a `resource` block that fetches source. The formula intentionally has no source-build path; releases are binary-only.
+
+**Formula updates come from CI.** `mirrorpath/latch`'s release workflow opens an auto-PR against this repo on every release, bumping `version` and the four per-arch `sha256`s. Hand-edits should be rare; the typical PR-author-of-record is the GitHub Actions bot.
+
+**The custom download strategy in `custom_download_strategy.rb` is vendored from a deprecated brew built-in.** Brew's `AbstractFileDownloadStrategy` is a private API and has broken our pattern at least once historically (`Homebrew/brew#15169`, April 2023). The weekly CI smoke job in `mirrorpath/latch`'s `.github/workflows/brew-smoke.yml` will catch breakage; when it does, the fix usually means updating the `_fetch` keyword arguments to match brew's current signature.
+
+**Auto-merge is disabled.** Every formula bump goes through a manual maintainer-merge step. This is the load-bearing safety mechanism — a botched release should not silently propagate to users.
