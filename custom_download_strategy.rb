@@ -32,7 +32,11 @@ class GitHubPrivateRepositoryReleaseDownloadStrategy < CurlDownloadStrategy
   def initialize(url, name, version, **meta)
     super
     parse_url_pattern
-    set_github_token
+    # Token check is deferred to _fetch. During `def install`, brew strips
+    # HOMEBREW_* env vars but still re-instantiates resource strategies
+    # to stage cached files; failing in initialize would block cached
+    # resources from being staged.
+    @github_token = ENV.fetch("HOMEBREW_GITHUB_API_TOKEN", nil)
   end
 
   def parse_url_pattern
@@ -52,28 +56,12 @@ class GitHubPrivateRepositoryReleaseDownloadStrategy < CurlDownloadStrategy
 
   private
 
-  def set_github_token
-    @github_token = ENV.fetch("HOMEBREW_GITHUB_API_TOKEN", nil)
+  def _fetch(url:, resolved_url:, timeout:)
     unless @github_token
       raise CurlDownloadStrategyError,
             "HOMEBREW_GITHUB_API_TOKEN is required for the latch tap. " \
             "See https://github.com/mirrorpath/homebrew-latch#required-pat-scopes"
     end
-
-    validate_github_repository_access!
-  end
-
-  def validate_github_repository_access!
-    GitHub.repository(@owner, @repo)
-  rescue GitHub::API::HTTPNotFoundError
-    message = <<~EOS
-      HOMEBREW_GITHUB_API_TOKEN can not access the repository: #{@owner}/#{@repo}
-      This token may not have permission to access the repository or the url of formula may be incorrect.
-    EOS
-    raise CurlDownloadStrategyError, message
-  end
-
-  def _fetch(url:, resolved_url:, timeout:)
     # GitHub's release-asset endpoint returns JSON metadata by default.
     # To get the binary blob we MUST set Accept: application/octet-stream;
     # without it brew downloads the JSON, computes its sha256, compares
