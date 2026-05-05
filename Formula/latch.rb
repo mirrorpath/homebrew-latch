@@ -9,7 +9,7 @@ class Latch < Formula
   desc "Track work, decisions, and dependencies across AI agents"
   homepage "https://github.com/mirrorpath/latch"
   license "LicenseRef-Proprietary"
-  version "v0.1.0-preview.1"
+  version "v0.1.0-preview.3"
 
   depends_on "minisign"
 
@@ -17,12 +17,12 @@ class Latch < Formula
     on_arm do
       url "https://github.com/mirrorpath/latch/releases/download/#{version}/latch-#{version}-aarch64-apple-darwin.tar.gz",
           using: GitHubPrivateRepositoryReleaseDownloadStrategy
-      sha256 "0000000000000000000000000000000000000000000000000000000000000000"
+      sha256 "d4d57017bf119da72d393125962e1817c848cd18fce0a13cacf749e6e14684d5"
     end
     on_intel do
       url "https://github.com/mirrorpath/latch/releases/download/#{version}/latch-#{version}-x86_64-apple-darwin.tar.gz",
           using: GitHubPrivateRepositoryReleaseDownloadStrategy
-      sha256 "0000000000000000000000000000000000000000000000000000000000000000"
+      sha256 "40e8f8fa04d10f9dff4de11c28699d7c26ea2242bf13c3806b42bed38bc1a04a"
     end
   end
 
@@ -30,12 +30,12 @@ class Latch < Formula
     on_arm do
       url "https://github.com/mirrorpath/latch/releases/download/#{version}/latch-#{version}-aarch64-unknown-linux-gnu.tar.gz",
           using: GitHubPrivateRepositoryReleaseDownloadStrategy
-      sha256 "0000000000000000000000000000000000000000000000000000000000000000"
+      sha256 "42edcf062be517b447c84654f0dfde55ff69c3802d654edc44a87a65ac8519af"
     end
     on_intel do
       url "https://github.com/mirrorpath/latch/releases/download/#{version}/latch-#{version}-x86_64-unknown-linux-gnu.tar.gz",
           using: GitHubPrivateRepositoryReleaseDownloadStrategy
-      sha256 "0000000000000000000000000000000000000000000000000000000000000000"
+      sha256 "2ad8e0ba7775c9580af92b67dab3226a1ca3fddc371917b5ecaa96a7c53b04c2"
     end
   end
 
