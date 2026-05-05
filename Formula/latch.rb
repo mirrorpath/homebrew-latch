@@ -45,14 +45,17 @@ class Latch < Formula
   # so curl-with-Authorization-header would fail. Resources are downloaded
   # by brew's main process where the env var is still available, via the
   # same custom strategy as the binary.
+  # Resource URLs hardcode the version because `#{version}` inside a
+  # resource block refers to the *resource's* own version (nil by default),
+  # not the formula's. Auto-PR bumps these on each release.
   resource "checksums" do
-    url "https://github.com/mirrorpath/latch/releases/download/#{version}/checksums.txt",
+    url "https://github.com/mirrorpath/latch/releases/download/v0.1.0-preview.3/checksums.txt",
         using: GitHubPrivateRepositoryReleaseDownloadStrategy
     sha256 "315165a7357e9151ecc21bd141a3b2454c57ad6692f2f87bfd5169d15dbab452"
   end
 
   resource "checksums-sig" do
-    url "https://github.com/mirrorpath/latch/releases/download/#{version}/checksums.txt.minisig",
+    url "https://github.com/mirrorpath/latch/releases/download/v0.1.0-preview.3/checksums.txt.minisig",
         using: GitHubPrivateRepositoryReleaseDownloadStrategy
     sha256 "cc2df36ff61d861fd5a9bc5b67bd088627e1cde4b896f8d363d47a6a0baeb906"
   end
