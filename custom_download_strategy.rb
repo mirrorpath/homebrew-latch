@@ -90,10 +90,11 @@ class GitHubPrivateRepositoryReleaseDownloadStrategy < CurlDownloadStrategy
       "--show-error",
       "--header", "Accept: application/octet-stream",
       "--header", "Authorization: Bearer #{@github_token}",
-      "--max-time", timeout.to_s,
-      "--output", temporary_path.to_s,
-      download_url,
     ]
+    # Brew may pass timeout as nil; curl rejects --max-time with empty value.
+    args += ["--max-time", timeout.to_s] if timeout.is_a?(Numeric) && timeout.positive?
+    args += ["--output", temporary_path.to_s, download_url]
+
     _stdout, stderr, status = Open3.capture3("/usr/bin/curl", *args)
     return if status.success?
 
