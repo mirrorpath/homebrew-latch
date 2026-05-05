@@ -47,7 +47,7 @@ class GitHubPrivateRepositoryReleaseDownloadStrategy < CurlDownloadStrategy
   end
 
   def download_url
-    "https://#{@github_token}@api.github.com/repos/#{@owner}/#{@repo}/releases/assets/#{asset_id}"
+    "https://api.github.com/repos/#{@owner}/#{@repo}/releases/assets/#{asset_id}"
   end
 
   private
@@ -74,7 +74,30 @@ class GitHubPrivateRepositoryReleaseDownloadStrategy < CurlDownloadStrategy
   end
 
   def _fetch(url:, resolved_url:, timeout:)
-    curl_download download_url, to: temporary_path, timeout: timeout
+    # GitHub's release-asset endpoint returns JSON metadata by default.
+    # To get the binary blob we MUST set Accept: application/octet-stream;
+    # without it brew downloads the JSON, computes its sha256, compares
+    # to the formula's declared sha256 (which is the binary's), and fails
+    # with a checksum mismatch. The API responds 302 → signed S3 URL,
+    # which curl follows via --location. Token goes in an Authorization
+    # header rather than URL user-info: cleaner, doesn't appear in curl's
+    # default logs, and survives proxies that strip user-info.
+    require "open3"
+    args = [
+      "--location",
+      "--fail",
+      "--silent",
+      "--show-error",
+      "--header", "Accept: application/octet-stream",
+      "--header", "Authorization: Bearer #{@github_token}",
+      "--max-time", timeout.to_s,
+      "--output", temporary_path.to_s,
+      download_url,
+    ]
+    _stdout, stderr, status = Open3.capture3("/usr/bin/curl", *args)
+    return if status.success?
+
+    raise CurlDownloadStrategyError, "GitHub asset download failed for #{@filename}: #{stderr}"
   end
 
   def asset_id
