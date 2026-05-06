@@ -12,14 +12,21 @@ brew tap mirrorpath/latch git@github.com:mirrorpath/homebrew-latch.git
 brew install latch
 ```
 
-The SSH form is required for the tap clone because `mirrorpath/homebrew-latch` is private.
+For users who prefer HTTPS to SSH:
+
+```bash
+export HOMEBREW_GITHUB_API_TOKEN=<PAT>
+brew tap mirrorpath/latch https://github.com/mirrorpath/homebrew-latch.git
+brew install latch
+```
 
 ### Required PAT scopes
 
 `HOMEBREW_GITHUB_API_TOKEN` must be a fine-grained PAT with:
 
-- `mirrorpath/latch` → **Contents: Read** (downloads the release archive + checksums + minisig)
 - `mirrorpath/homebrew-latch` → **Contents: Read** (clones this tap)
+
+That's it. The binary download pulls from the public `mirrorpath/latch-public-release` and needs no auth.
 
 Use a dedicated, machine-specific PAT. Do not reuse a personal-development PAT.
 
@@ -48,8 +55,8 @@ A rotation that lands between `brew update` and `brew install` will fail-closed 
 
 **Source distribution is out of scope.** Do not add a `url` to source, a `head` block, or a `resource` block that fetches source. The formula intentionally has no source-build path; releases are binary-only.
 
-**Formula updates come from CI.** `mirrorpath/latch`'s release workflow opens an auto-PR against this repo on every release, bumping `version` and the four per-arch `sha256`s. Hand-edits should be rare; the typical PR-author-of-record is the GitHub Actions bot.
+**Binaries are hosted publicly at `mirrorpath/latch-public-release`.** This tap stays private to gate discovery and upgrades. The formula points at public release URLs, so the binary download itself needs no auth — only the tap clone does.
 
-**The custom download strategy in `custom_download_strategy.rb` is vendored from a deprecated brew built-in.** Brew's `AbstractFileDownloadStrategy` is a private API and has broken our pattern at least once historically (`Homebrew/brew#15169`, April 2023). The weekly CI smoke job in `mirrorpath/latch`'s `.github/workflows/brew-smoke.yml` will catch breakage; when it does, the fix usually means updating the `_fetch` keyword arguments to match brew's current signature.
+**Formula updates come from CI.** `mirrorpath/latch`'s release workflow opens an auto-PR against this repo on every release, bumping `version`, the four per-arch `sha256`s, the two resource `sha256`s, and the resource URL versions. Hand-edits should be rare; the typical PR-author-of-record is the GitHub Actions bot.
 
 **Auto-merge is disabled.** Every formula bump goes through a manual maintainer-merge step. This is the load-bearing safety mechanism — a botched release should not silently propagate to users.
