@@ -1,63 +1,51 @@
 # Maintainer note: source distribution is OUT OF SCOPE for this formula.
 # Do not add a `url` to source, a `head` block, or a `resource` block that
-# fetches source. Releases are binary-only; the `mirrorpath/latch` repo is
-# private. See README.md in this tap for the full distribution policy.
-
-require_relative "../custom_download_strategy"
+# fetches source. Releases are binary-only; the `mirrorpath/latch` source
+# repo is private. The release artifacts this formula references are
+# hosted at mirrorpath/latch-public-release (a public repo with no
+# source).
 
 class Latch < Formula
   desc "Track work, decisions, and dependencies across AI agents"
   homepage "https://github.com/mirrorpath/latch"
   license "LicenseRef-Proprietary"
-  version "v0.1.0-preview.4"
+  version "v0.1.0-preview.1"
 
   depends_on "minisign"
 
   on_macos do
     on_arm do
-      url "https://github.com/mirrorpath/latch/releases/download/#{version}/latch-#{version}-aarch64-apple-darwin.tar.gz",
-          using: GitHubPrivateRepositoryReleaseDownloadStrategy
-      sha256 "f957d94657fe0b31e880902ec9ea3a94c01de229f2e8ef7d04d61ab67e358735"
+      url "https://github.com/mirrorpath/latch-public-release/releases/download/#{version}/latch-#{version}-aarch64-apple-darwin.tar.gz"
+      sha256 "0000000000000000000000000000000000000000000000000000000000000000"
     end
     on_intel do
-      url "https://github.com/mirrorpath/latch/releases/download/#{version}/latch-#{version}-x86_64-apple-darwin.tar.gz",
-          using: GitHubPrivateRepositoryReleaseDownloadStrategy
-      sha256 "2c43ee2009d24a09f94ce4a61de881a532c60601820d5305036b1762b6709a01"
+      url "https://github.com/mirrorpath/latch-public-release/releases/download/#{version}/latch-#{version}-x86_64-apple-darwin.tar.gz"
+      sha256 "0000000000000000000000000000000000000000000000000000000000000000"
     end
   end
 
   on_linux do
     on_arm do
-      url "https://github.com/mirrorpath/latch/releases/download/#{version}/latch-#{version}-aarch64-unknown-linux-gnu.tar.gz",
-          using: GitHubPrivateRepositoryReleaseDownloadStrategy
-      sha256 "416ae735edfc8b258e8f1a06b66df03edbc18a997ef354cc37b9bc560bc6738b"
+      url "https://github.com/mirrorpath/latch-public-release/releases/download/#{version}/latch-#{version}-aarch64-unknown-linux-gnu.tar.gz"
+      sha256 "0000000000000000000000000000000000000000000000000000000000000000"
     end
     on_intel do
-      url "https://github.com/mirrorpath/latch/releases/download/#{version}/latch-#{version}-x86_64-unknown-linux-gnu.tar.gz",
-          using: GitHubPrivateRepositoryReleaseDownloadStrategy
-      sha256 "e51865719f44d62d460da500f0e47377ecff2cce24f63749b391296c334d6d3b"
+      url "https://github.com/mirrorpath/latch-public-release/releases/download/#{version}/latch-#{version}-x86_64-unknown-linux-gnu.tar.gz"
+      sha256 "0000000000000000000000000000000000000000000000000000000000000000"
     end
   end
 
-  # checksums.txt and its minisig are fetched as resources rather than via
-  # curl in `def install` because Homebrew's superenv strips HOMEBREW_*
-  # env vars (including HOMEBREW_GITHUB_API_TOKEN) before def install runs,
-  # so curl-with-Authorization-header would fail. Resources are downloaded
-  # by brew's main process where the env var is still available, via the
-  # same custom strategy as the binary.
   # Resource URLs hardcode the version because `#{version}` inside a
   # resource block refers to the *resource's* own version (nil by default),
   # not the formula's. Auto-PR bumps these on each release.
   resource "checksums" do
-    url "https://github.com/mirrorpath/latch/releases/download/v0.1.0-preview.4/checksums.txt",
-        using: GitHubPrivateRepositoryReleaseDownloadStrategy
-    sha256 "a6ee56261839f8bd5cfc9d415a98cf0214548033c8f9e417924cec9553002e3a"
+    url "https://github.com/mirrorpath/latch-public-release/releases/download/v0.1.0-preview.1/checksums.txt"
+    sha256 "0000000000000000000000000000000000000000000000000000000000000000"
   end
 
   resource "checksums-sig" do
-    url "https://github.com/mirrorpath/latch/releases/download/v0.1.0-preview.4/checksums.txt.minisig",
-        using: GitHubPrivateRepositoryReleaseDownloadStrategy
-    sha256 "08e99f6301d09a90d92912265b709721164d48922a1fb9e13cf0c0dc3071c318"
+    url "https://github.com/mirrorpath/latch-public-release/releases/download/v0.1.0-preview.1/checksums.txt.minisig"
+    sha256 "0000000000000000000000000000000000000000000000000000000000000000"
   end
 
   def install
@@ -82,8 +70,8 @@ class Latch < Formula
            "-x", "checksums.txt.minisig"
 
     # The unpacked archive layout is latch-<version>-<target>/latch.
-    # The custom download strategy already extracted it via brew's standard
-    # path before def install ran, so the binary is in the current directory.
+    # Brew's default extraction puts us inside that directory before
+    # def install runs.
     bin.install "latch"
   end
 
