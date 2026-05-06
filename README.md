@@ -1,8 +1,8 @@
 # homebrew-latch
 
-Private Homebrew tap for `latch`. Distributes the [`mirrorpath/latch`](https://github.com/mirrorpath/latch) binary as a brew formula on the same trust posture as `scripts/install-latch.sh`: minisign signature over `checksums.txt`, verified at install time inside `def install`.
+Private Homebrew tap for `latch`. The formula points at public binary release artifacts hosted at [`mirrorpath/latch-public-release`](https://github.com/mirrorpath/latch-public-release); the trust anchor is a minisign signature over `checksums.txt`, verified at install time inside `def install`.
 
-This is internal-private-preview infrastructure. Both this repo and `mirrorpath/latch` are private. Do not make either public without re-reviewing the distribution policy in `docs/release/internal-private-preview.md` (in the `mirrorpath/latch` repo).
+This tap stays private to gate discovery and `brew upgrade`. The source repo `mirrorpath/latch` is also private. Do not make this tap public without re-reviewing the distribution policy in `docs/release/preview-binary-distribution.md` (in the `mirrorpath/latch` repo).
 
 ## How users install latch via this tap
 
@@ -38,7 +38,7 @@ The formula bundles the project's minisign public key (`Formula/latch-minisign.p
 minisign -Vm checksums.txt -p Formula/latch-minisign.pub -x checksums.txt.minisig
 ```
 
-Install aborts on verification failure. This matches `install-latch.sh` exactly.
+Install aborts on verification failure. The same minisign check is also documented for manual installs in the `mirrorpath/latch-public-release` README.
 
 ### Public key rotation
 

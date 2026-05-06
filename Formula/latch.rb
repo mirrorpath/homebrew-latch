@@ -54,7 +54,8 @@ class Latch < Formula
     resource("checksums-sig").stage(buildpath)
 
     # Verify checksums.txt against the bundled minisign public key.
-    # This is the same trust check scripts/install-latch.sh runs.
+    # This is the same trust check the manual-install path documents in
+    # the mirrorpath/latch-public-release README.
     #
     # Trust chain:
     #   1. Tap maintainer review = trust anchor for this formula's sha256.
