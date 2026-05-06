@@ -1,36 +1,17 @@
 # homebrew-latch
 
-Private Homebrew tap for `latch`. The formula points at public binary release artifacts hosted at [`mirrorpath/latch-public-release`](https://github.com/mirrorpath/latch-public-release); the trust anchor is a minisign signature over `checksums.txt`, verified at install time inside `def install`.
+Homebrew tap for [`latch`](https://github.com/mirrorpath/latch). The formula points at public binary release artifacts hosted at [`mirrorpath/latch-public-release`](https://github.com/mirrorpath/latch-public-release); the trust anchor is a minisign signature over `checksums.txt`, verified at install time inside `def install`.
 
-This tap stays private to gate discovery and `brew upgrade`. The source repo `mirrorpath/latch` is also private. Do not make this tap public without re-reviewing the distribution policy in `docs/release/preview-binary-distribution.md` (in the `mirrorpath/latch` repo).
+The latch source repo (`mirrorpath/latch`) remains private. This tap and the binary release host are public — anyone with the tap URL can install latch with no authentication.
 
-## How users install latch via this tap
+## Install
 
 ```bash
-export HOMEBREW_GITHUB_API_TOKEN=<fine-grained PAT, see scopes below>
-brew tap mirrorpath/latch git@github.com:mirrorpath/homebrew-latch.git
+brew tap mirrorpath/latch
 brew install latch
 ```
 
-For users who prefer HTTPS to SSH:
-
-```bash
-PAT=<your-pat>
-brew tap mirrorpath/latch "https://x-access-token:${PAT}@github.com/mirrorpath/homebrew-latch.git"
-brew install latch
-```
-
-The token must be embedded in the clone URL. `brew tap` does NOT pass `HOMEBREW_GITHUB_API_TOKEN` to git, so the env-var-only form fails with "password authentication is not supported."
-
-### Required PAT scopes
-
-`HOMEBREW_GITHUB_API_TOKEN` must be a fine-grained PAT with:
-
-- `mirrorpath/homebrew-latch` → **Contents: Read** (clones this tap)
-
-That's it. The binary download pulls from the public `mirrorpath/latch-public-release` and needs no auth.
-
-Use a dedicated, machine-specific PAT. Do not reuse a personal-development PAT.
+That's it. No PAT, no env var, no SSH key. The tap clone and the binary download both go over plain HTTPS.
 
 ## Trust posture
 
@@ -56,8 +37,6 @@ A rotation that lands between `brew update` and `brew install` will fail-closed 
 ## Maintenance notes
 
 **Source distribution is out of scope.** Do not add a `url` to source, a `head` block, or a `resource` block that fetches source. The formula intentionally has no source-build path; releases are binary-only.
-
-**Binaries are hosted publicly at `mirrorpath/latch-public-release`.** This tap stays private to gate discovery and upgrades. The formula points at public release URLs, so the binary download itself needs no auth — only the tap clone does.
 
 **Formula updates come from CI.** `mirrorpath/latch`'s release workflow opens an auto-PR against this repo on every release, bumping `version`, the four per-arch `sha256`s, the two resource `sha256`s, and the resource URL versions. Hand-edits should be rare; the typical PR-author-of-record is the GitHub Actions bot.
 
