@@ -15,10 +15,12 @@ brew install latch
 For users who prefer HTTPS to SSH:
 
 ```bash
-export HOMEBREW_GITHUB_API_TOKEN=<PAT>
-brew tap mirrorpath/latch https://github.com/mirrorpath/homebrew-latch.git
+PAT=<your-pat>
+brew tap mirrorpath/latch "https://x-access-token:${PAT}@github.com/mirrorpath/homebrew-latch.git"
 brew install latch
 ```
+
+The token must be embedded in the clone URL. `brew tap` does NOT pass `HOMEBREW_GITHUB_API_TOKEN` to git, so the env-var-only form fails with "password authentication is not supported."
 
 ### Required PAT scopes
 
