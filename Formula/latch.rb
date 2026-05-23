@@ -9,29 +9,29 @@ class Latch < Formula
   desc "Track work, decisions, and dependencies across AI agents"
   homepage "https://github.com/mirrorpath/latch"
   license "LicenseRef-Proprietary"
-  version "v0.1.0-preview.2"
+  version "v0.1.0-preview.6"
 
   depends_on "minisign"
 
   on_macos do
     on_arm do
       url "https://github.com/mirrorpath/latch-public-release/releases/download/#{version}/latch-#{version}-aarch64-apple-darwin.tar.gz"
-      sha256 "4becc6c5f09875461accbdaa1ba28139b6ed4d7e9d76b5da96f7c6b52274dd1f"
+      sha256 "0a8896d33340d0d488aa53a068f73993b3ee80989ab6fc51f3eedf2cad3c65ab"
     end
     on_intel do
       url "https://github.com/mirrorpath/latch-public-release/releases/download/#{version}/latch-#{version}-x86_64-apple-darwin.tar.gz"
-      sha256 "27c287de48749f2e24a33ad257a65f5dde35f0cfa38a6d27a5ba2af2c3195493"
+      sha256 "cdc9b59c41b90508c3c741e047d5623bcab3e16a871847bbcd82642ed8d5a64d"
     end
   end
 
   on_linux do
     on_arm do
       url "https://github.com/mirrorpath/latch-public-release/releases/download/#{version}/latch-#{version}-aarch64-unknown-linux-gnu.tar.gz"
-      sha256 "ddadb01a5b7e33eb98bb5ab320bf85af4d46d4d3685335088083eea8a9c83da8"
+      sha256 "8b13f84d6360e1fbc1d0aba2bd9b4bbcb0c1eaca7fd438fe4f6ca400aa185de0"
     end
     on_intel do
       url "https://github.com/mirrorpath/latch-public-release/releases/download/#{version}/latch-#{version}-x86_64-unknown-linux-gnu.tar.gz"
-      sha256 "ca729d6e3378f5d0d73bb9dc2a55cc1d458fe04ce6f09145d152b50c16307ccf"
+      sha256 "7038dc208312f84ae2e87321099fde6b6b1ce9922ae252ac784314ec1436a37c"
     end
   end
 
@@ -39,13 +39,13 @@ class Latch < Formula
   # resource block refers to the *resource's* own version (nil by default),
   # not the formula's. Auto-PR bumps these on each release.
   resource "checksums" do
-    url "https://github.com/mirrorpath/latch-public-release/releases/download/v0.1.0-preview.2/checksums.txt"
-    sha256 "fd337ebff76f90024fa4edd589019585ac8d437a1aea2d4cca435cc74079c6d9"
+    url "https://github.com/mirrorpath/latch-public-release/releases/download/v0.1.0-preview.6/checksums.txt"
+    sha256 "5011e2b943a037602aa4850b4d5fca7af22c31623dba47c8187f986acb18ecb1"
   end
 
   resource "checksums-sig" do
-    url "https://github.com/mirrorpath/latch-public-release/releases/download/v0.1.0-preview.2/checksums.txt.minisig"
-    sha256 "7a0e21d2e6ccedf441e9d480cb301fe1b752c39c6a51d06641b725e12d6608bf"
+    url "https://github.com/mirrorpath/latch-public-release/releases/download/v0.1.0-preview.6/checksums.txt.minisig"
+    sha256 "de42dd29ad4e9a26eab344b431763aa9d7af8d8701b3c6c543a2b9be599c73ef"
   end
 
   def install
